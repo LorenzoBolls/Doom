@@ -21,6 +21,8 @@ class GameObject;
 
 class Weapon;
 
+class Scroll;
+
 class Actor
 {
 public:
@@ -38,6 +40,7 @@ public:
     string getName() const;
     Weapon* getWeapon() const;
     Temple* getTemple() const;
+    string getScrollStatus() const;
     
     //mutators/modifiers
     void setPosition(int row, int col);
@@ -48,6 +51,7 @@ public:
     void setSleepTime(int sleepTime);
     void equipWeapon(Weapon* weapon);
     void setTemple(Temple* t);
+    void readScroll(Scroll* scroll);
     
     //actions
     virtual void attack(Actor* target);
@@ -59,6 +63,7 @@ public:
     
 private:
     string mName;
+    string mScrollStatus;
     int mRow, mCol;
     int mHitPoints, mArmor, mStrength, mDexterity, mSleepTime;
     Weapon* currentWeapon;
@@ -79,8 +84,6 @@ public:
     
     //TODO
     void grabObject();
-    void wieldWeapon();
-    void readScroll();
     void viewInventory();
     void descendStairs();
     void quitGame();
@@ -90,20 +93,14 @@ public:
     
     void move(char dir);
     
-    bool getInventoryOpen();
-
-    void setInventoryOpen(bool inv);
+    int convertCharToInt(char val);
     
-    
-    vector<GameObject*> getInventory();
-    
-
-    
-    //POSITION
+    const vector<GameObject*>& getInventory();
+    void setInventory(vector<GameObject*> inv);
+    void removeFromInventory(GameObject* remove);
 
 private:
     vector<GameObject*> Inventory;
-    bool inventoryOpen;
 };
 
 class Monster : public Actor
