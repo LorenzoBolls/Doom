@@ -36,6 +36,11 @@ void Game::play()
     mGameTemple->display();
     Player* gamePlayer;
     int state = 0;
+    bool updatedStatus = false;
+    bool pickedUpStatus = false;
+    string statusOutput = "";
+    string pickUp = "";
+    string scrollOutput = "";
     
     while ((ch) != 'q') {
         ch = getCharacter();
@@ -45,16 +50,47 @@ void Game::play()
             int index = gamePlayer->convertCharToInt(ch);
             if (index < gamePlayer->getInventory().size())
             {
+                updatedStatus = true;
                 GameObject* invItem = gamePlayer->getInventory().at(index);
                 if (!mGameTemple->isScroll(invItem))
                 {
                     Weapon* w = dynamic_cast<Weapon*>(invItem);
                     gamePlayer->equipWeapon(w);
-                    cout << "You are wielding " << invItem->getName();
+                    statusOutput = "\n\nYou are wielding " + invItem->getName();
                 }
                 else
                 {
-                    cout << "You can't wield " << invItem->getName();
+                    statusOutput = "\n\nYou can't wield " + invItem->getName();
+                }
+                state = 0;
+                inv = false;
+            }
+        }
+        if (state == 2) {
+            int index = gamePlayer->convertCharToInt(ch);
+            if (index < gamePlayer->getInventory().size())
+            {
+                updatedStatus = true;
+                GameObject* invItem = gamePlayer->getInventory().at(index);
+                if (mGameTemple->isScroll(invItem))
+                {
+                    Scroll* s = dynamic_cast<Scroll*>(invItem);
+                    
+                    gamePlayer->readScroll(s);
+                    
+                    
+                    scrollOutput = gamePlayer->getScrollStatus();
+                    cout << "scroll output: " << scrollOutput << endl;
+                    
+                    
+                    //remove from inventory HAVE TO CHECK IF LOGIC IS CORRECT
+                    gamePlayer->removeFromInventory(s);
+                    
+                    statusOutput = "\n\nYou read the scroll called " + invItem->getName();
+                }
+                else
+                {
+                    statusOutput = "\n\nYou can't read a " + invItem->getName();
                 }
                 state = 0;
                 inv = false;
@@ -67,44 +103,6 @@ void Game::play()
             gamePlayer->setHitPoints(50);
             gamePlayer->setStrength(9);
         }
-        
-        
-        //try adding an int that makes b = 0, b = 1, b = 2, b = 3, 0 means not openied, 1 means opened, 2 means weapon, 3 means scroll
-        //then in different loops it will know if it was called
-        
-        /*
-         bool invStatus = 0
-         if (ch == 'i' || ch == 'w' || ch == 'r')
-         {
-            if (invStatus == 0)
-            {
-                gamePlayer->viewInventory();
-                if (ch =='i')
-                {
-                inv = 1;
-                }
-                if (ch == 'w')
-                {
-                    inv =2
-                }
-                if (ch == ' r')
-                {
-                    invStatus = 3;
-                }
-                
-            }
-             else if (ch == 'i') //inventory is open
-             {
-                 invStatus = 0;
-             }
-
-         }
-         else
-         {
-             inv = false;
-         }
-         }
-         */
         
         if (ch == 'i' || ch == 'w' || ch == 'r')
         {
@@ -126,21 +124,12 @@ void Game::play()
         
         if (ch == 'w')
         {
-            //first you take input
-            /*
-             run through convertCharToInt fuction
-             access it in vector Inventory[index]
-             
-             check if it is a weapon (by dynamic casting).
-             if the dynamic casting doesn't work, say can't read a scroll
-             if it does work, equip weapon
-             */
             state = 1;
         }
 
         else if (ch == 'r')
         {
-            
+            state = 2;
         }
         
         //adding to inventory CHECK && isGameObjectat
@@ -154,7 +143,8 @@ void Game::play()
             {
                 mGameTemple->removeItems(gamePlayer->getRow(), gamePlayer->getCol());
                 gamePlayer->addToInventory(toAdd);
-                cout << endl << endl << "You pick up " << toAdd->getName();
+                pickUp = "\n\nYou pick up " + toAdd->getName();
+                pickedUpStatus = true;
             }
         
             
@@ -182,6 +172,17 @@ void Game::play()
         if (inv != true) //inventory is not being showed
         {
             mGameTemple->display();
+            if (pickedUpStatus)
+            {
+                cout << pickUp;
+                pickedUpStatus = false;
+            }
+            if (updatedStatus)
+            {
+                cout << statusOutput;
+                cout << scrollOutput;
+                updatedStatus = false;
+            }
         }
         
     }
