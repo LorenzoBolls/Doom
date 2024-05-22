@@ -43,18 +43,22 @@ void Game::play()
         
         if (state == 1) {
             int index = gamePlayer->convertCharToInt(ch);
-           GameObject* invItem = gamePlayer->getInventory().at(index);
-            if (!mGameTemple->isScroll(invItem))
+            if (index < gamePlayer->getInventory().size())
             {
-                Weapon* w = dynamic_cast<Weapon*>(invItem);
-                gamePlayer->equipWeapon(w);
+                GameObject* invItem = gamePlayer->getInventory().at(index);
+                if (!mGameTemple->isScroll(invItem))
+                {
+                    Weapon* w = dynamic_cast<Weapon*>(invItem);
+                    gamePlayer->equipWeapon(w);
+                    cout << "You are wielding " << invItem->getName();
+                }
+                else
+                {
+                    cout << "You can't wield " << invItem->getName();
+                }
+                state = 0;
+                inv = false;
             }
-            else
-            {
-                cout << "You can't wield " << invItem->getName();
-            }
-            state = 0;
-            inv = false;
         }
         
         if(ch == 'c')
