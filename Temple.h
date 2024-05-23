@@ -58,11 +58,21 @@ public:
     void placeScrollsRandomly();
     void placeMultipleScrolls();
     
-    GameObject* findWeapon(int r, int c);
-    GameObject* findScroll(int r, int c);
+    GameObject* findItems(int r, int c);
+
+    void removeItems(int r, int c);
+
+    bool isScroll(GameObject* item) const;
     
-    void removeWeapon(int r, int c);
-    void removeScroll(int r, int c);
+    void playerAttack();
+    
+    //DEBUGGING
+    Monster* getMonster(int index) const;
+
+    string getAllMonstersAttackStatus() const;
+    void resetMonstersAttackingStatus();
+    bool isAnyMonsterAttacking() const;
+
     
     
     /*
@@ -79,8 +89,7 @@ private:
     int mLevel;
     Player* mPlayer;
     std::vector<Monster*> mMonsters;
-    std::vector<Weapon*> mWeapons;
-    std::vector<Scroll*> mScrolls;
+    std::vector<GameObject*> mItems;
     int mDescend_r;
     int mDescend_c;
     char temple[TEMPLE_ROWS][TEMPLE_COLUMNS];
