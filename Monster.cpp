@@ -12,23 +12,31 @@
 #include "Temple.h"
 #include <cmath>
 
-Monster::Monster(Temple* currTemple, const string& name, int hitPoints, Weapon* currWeapon, int armor, int strength, int dexterity, int row, int col) : Actor(currTemple, name, hitPoints, currWeapon, armor, strength, dexterity, 0, row, col)
-{}
+#include<iostream>
+
+Monster::Monster(Temple* currTemple, const string& name, int hitPoints, int maxHitPoints, Weapon* currWeapon, int armor, int strength, int dexterity, int row, int col) : Actor(currTemple, name, hitPoints, maxHitPoints, currWeapon, armor, strength, dexterity, 0, row, col)
+{
+    
+}
 
 Monster::~Monster()
 {}
 
-Bogeymen::Bogeymen(Temple* currBogeymenTemple, int row, int col) : Monster(currBogeymenTemple, "Bogeyman", randInt(5,10), new ShortSword(), 2, randInt(2,3), randInt(2,3), row, col)
+Bogeymen::Bogeymen(Temple* currBogeymenTemple, int row, int col) : Monster(currBogeymenTemple, "Bogeymen", randInt(5,10), 10, new ShortSword(), 2, randInt(2,3), randInt(2,3), row, col)
 {}
 
 void Bogeymen::takeTurn(Player* player) 
 {
+
+    
     int playerRow = player->getRow();
     int playerCol = player->getCol();
 
     //if adjacent to player, attack
     if (abs(playerRow - getRow()) + abs(playerCol - getCol()) == 1) 
     {
+        //FOR DEBUGGING
+        //cout << endl << "bogeymen calculating whether to attack: " << endl;
         attack(player);
         return;
     }
