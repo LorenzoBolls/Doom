@@ -30,12 +30,13 @@ Game::~Game()
 
 void Game::play()
 {
-    bool inv = false;
     char ch = ' ';
-    int maxHitPoints = 20;
     mGameTemple->display();
     Player* gamePlayer;
+    
+    //inventory trackers
     int state = 0;
+    bool inv = false;
     bool updatedStatus = false;
     bool pickedUpStatus = false;
     string statusOutput = "";
@@ -56,11 +57,11 @@ void Game::play()
                 {
                     Weapon* w = dynamic_cast<Weapon*>(invItem);
                     gamePlayer->equipWeapon(w);
-                    statusOutput = "\n\nYou are wielding " + invItem->getName();
+                    statusOutput = "\nYou are wielding " + invItem->getName();
                 }
                 else
                 {
-                    statusOutput = "\n\nYou can't wield " + invItem->getName();
+                    statusOutput = "\nYou can't wield " + invItem->getName();
                 }
                 state = 0;
                 inv = false;
@@ -77,20 +78,14 @@ void Game::play()
                     Scroll* s = dynamic_cast<Scroll*>(invItem);
                     
                     gamePlayer->readScroll(s);
-                    
-                    
                     scrollOutput = gamePlayer->getScrollStatus();
-                    cout << "scroll output: " << scrollOutput << endl;
-                    
-                    
-                    //remove from inventory HAVE TO CHECK IF LOGIC IS CORRECT
                     gamePlayer->removeFromInventory(s);
                     
-                    statusOutput = "\n\nYou read the scroll called " + invItem->getName();
+                    statusOutput = "\nYou read the " + invItem->getName();
                 }
                 else
                 {
-                    statusOutput = "\n\nYou can't read a " + invItem->getName();
+                    statusOutput = "\nYou can't read a " + invItem->getName();
                 }
                 state = 0;
                 inv = false;
@@ -99,7 +94,6 @@ void Game::play()
         
         if(ch == 'c')
         {
-            maxHitPoints = 50;
             gamePlayer->setHitPoints(50);
             gamePlayer->setStrength(9);
         }
@@ -126,13 +120,12 @@ void Game::play()
         {
             state = 1;
         }
-
         else if (ch == 'r')
         {
             state = 2;
         }
         
-        //adding to inventory CHECK && isGameObjectat
+        //makes sure only adds gameobjects to inventory
         if (ch == 'g' && !mGameTemple->isDescendPosition(gamePlayer->getRow(), gamePlayer->getCol()) && mGameTemple->isGameObjectAt(gamePlayer->getRow(), gamePlayer->getCol()))
         {
             
@@ -143,7 +136,7 @@ void Game::play()
             {
                 mGameTemple->removeItems(gamePlayer->getRow(), gamePlayer->getCol());
                 gamePlayer->addToInventory(toAdd);
-                pickUp = "\n\nYou pick up " + toAdd->getName();
+                pickUp = "\nYou pick up " + toAdd->getName();
                 pickedUpStatus = true;
             }
         
@@ -153,25 +146,33 @@ void Game::play()
         if (ch == '>' && mGameTemple->isDescendPosition(gamePlayer->getRow(), gamePlayer->getCol()))
         {
             descend();
-            
         }
 
-        gamePlayer->regainHitPoint(maxHitPoints);
+        gamePlayer->regainHitPoint(gamePlayer->getMaxHitPoints());
         gamePlayer->move(ch);
         mGameTemple->moveMonsters(gamePlayer);
-
-        /*
-         if (inv == 0)
-         {
-            mGameTemple->display();
-         }
-         
-         */
+        mGameTemple->playerAttack();
+        
+        
+        //DEBUGGING COUT
+        //cout << "mosnter health: " << mGameTemple->getMonster(0)->getHitPoints();
         
         
         if (inv != true) //inventory is not being showed
         {
             mGameTemple->display();
+            cout << endl;
+            //couting states underneath display
+            if (gamePlayer->isAttacking())
+            {
+                cout << endl << gamePlayer->getAttackStatus();
+                gamePlayer->setAttacking(false);
+            }
+            if (mGameTemple->isAnyMonsterAttacking())
+            {
+                cout << endl << mGameTemple->getAllMonstersAttackStatus();
+                mGameTemple->resetMonstersAttackingStatus();
+            }
             if (pickedUpStatus)
             {
                 cout << pickUp;
@@ -193,6 +194,7 @@ void Game::descend()
 {
     Player* oldPlayer = mGameTemple->getPlayer();
     int playerHitPoints = oldPlayer->getHitPoints();
+    int playerMaxHitPoints = oldPlayer->getMaxHitPoints();
     int playerArmor = oldPlayer->getArmor();
     int playerStrength = oldPlayer->getStrength();
     int playerDexterity = oldPlayer->getDexterity();
@@ -209,6 +211,7 @@ void Game::descend()
     Player* newPlayer = mGameTemple->getPlayer();
     newPlayer->setTemple(mGameTemple);
     newPlayer->setHitPoints(playerHitPoints);
+    newPlayer->setMaxHitPoints(playerMaxHitPoints);
     newPlayer->setArmor(playerArmor);
     newPlayer->setStrength(playerStrength);
     newPlayer->setDexterity(playerDexterity);
