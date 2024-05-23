@@ -18,73 +18,57 @@ using namespace std;
 //IMPORTANT change "short sword" to weapon after implementing weapon object
 // starting conditions "Player", 20, "short sword", 2, 2, 2, 0, 3, 3
 //CHANGED (3, 3) to row and col from the constructor parameters, BE CAREFUL AND CHANGE IT BACK IF IT DOESN'T WORK
-Player::Player(Temple* playerTemple, int row, int col) : Actor(playerTemple, "Player", 20, new ShortSword(), 2, 2, 2, 0, row, col)
+Player::Player(Temple* playerTemple, int row, int col) : Actor(playerTemple, "Player", 20, 20, new ShortSword(), 2, 2, 2, 0, row, col)
 {
     addToInventory(getWeapon());
-    inventoryOpen = false;
 }
 
 Player::~Player()
 {}
 
-void Player::regainHitPoint(int maxHitPoints)
-{
-    if(randInt(1, 10) == 1)
-    {
-        if(getHitPoints() < maxHitPoints)
-        {
-            setHitPoints(getHitPoints() + 1);
-        }
-    }
-}
+
 
 //void Player::attack(Actor* attacker, Actor* target)
 //{
 //    int curr
 //}
 
-void Player::attack(Actor* target)
+
+char Player::getLastDirection() const
 {
-    int currRow = getRow();
-    int currCol = getCol();
-    
-    Weapon* currWeapon = getWeapon();
-    
-    //makes sure player holds a weapon before
-    if (!currWeapon)
-        return;
-    
-    int damage = currWeapon->getWeaponDamageAmount();
-    
-    if (target->getRow() == currRow-- && ARROW_LEFT)
-    {
-        //subtracts targets HitPoints by Damage
-        target->setHitPoints(target->getHitPoints() - damage);
-    }
-    
-    if (target->getRow() == currRow++ && ARROW_RIGHT)
-    {
-        target->setHitPoints(target->getHitPoints() - damage);
-    }
-    
-    if (target->getCol() == currCol++ && ARROW_UP)
-    {
-        target->setHitPoints(target->getHitPoints() - damage);
-    }
-    
-    if (target->getCol() == currCol-- && ARROW_DOWN)
-    {
-        target->setHitPoints(target->getHitPoints() - damage);
-    }
+    return lastDirection;
 }
+
+
+
+//void Player::attack(Actor* target)
+//{
+////    cout << "Player attacking target" << endl;
+////    
+////    if (getWeapon()->attackHits(getDexterity(), target->getDexterity(), target->getArmor()))
+////    {
+////        int damage = currentWeapon->calculateDamageAmount(mStrength);
+////        target->takeDamage(damage);
+////
+////        
+////        //special case for magic fangs of sleep
+////        MagicFangsOfSleep* magicFangs = dynamic_cast<MagicFangsOfSleep*>(getWeapon());
+////        if (magicFangs)
+////        {
+////            magicFangs->putToSleep(target->getSleepTime());
+////        }
+////    }
+//}
+
 
 void Player::move(char dir)
 {
     char symbol = '@';
     int row = getRow();
     int col = getCol();
-    setInventoryOpen(false);
-    if (getTemple()->determineNewPosition(row, col, dir, symbol)) {
+    lastDirection = dir;
+    if (getTemple()->determineNewPosition(row, col, dir, symbol)) 
+    {
         setPosition(row, col);
     }
 }
@@ -106,6 +90,23 @@ void Player::addToInventory(GameObject* add)
     Inventory.push_back(add);
 }
 
+
+//HAVE TO CHECK IF LOGIC IS CORRECT
+void Player::removeFromInventory(GameObject* remove)
+{
+    for (auto it = Inventory.begin(); it != Inventory.end(); )
+    {
+        if (*it == remove)
+        {
+            it = Inventory.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
 void Player::viewInventory()
 {
     clearScreen();
@@ -121,16 +122,27 @@ void Player::viewInventory()
     }
 }
 
-vector<GameObject*> Player::getInventory()
+int Player::convertCharToInt(char val)
+{
+    return (int)(val) - (int)('a');
+}
+
+//FIX
+//bool Player::isScroll(GameObject* item)
+//{
+//    GameObject* lastItem = Inventory.at(Inventory.size()-1);
+//    return (lastItem->getName().substr(0, 5) == "scroll");
+//}
+
+
+const vector<GameObject*>& Player::getInventory()
 {
     return Inventory;
 }
 
-bool Player::getInventoryOpen()
+void Player::setInventory(vector<GameObject*> inv)
 {
-    return inventoryOpen;
+    Inventory = inv;
 }
-void Player::setInventoryOpen(bool inv)
-{
-    inventoryOpen = inv;
-}
+
+
