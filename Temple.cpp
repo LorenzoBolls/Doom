@@ -83,8 +83,22 @@ void Temple::placePlayerRandomly() {
         c = randInt(1, TEMPLE_COLUMNS);
     }
 
-    mPlayer = new Player(this, r, c);
-    temple[r][c] = '@';
+     if (mPlayer != nullptr) //player already exists
+     {
+          //clear the old position
+          temple[mPlayer->getRow()][mPlayer->getCol()] = ' ';
+         
+          //update the player's position
+          mPlayer->setPosition(r, c);
+      } 
+     else
+     {
+          mPlayer = new Player(this, r, c);
+      }
+     
+    
+//    mPlayer = new Player(this, r, c);
+//    temple[r][c] = '@';
 }
 
 void Temple::placeDescendPoint()
@@ -102,17 +116,11 @@ void Temple::placeDescendPoint()
 
 bool Temple::isGameObjectAt(int r, int c)
 {
-    for (Weapon* w : mWeapons)
-        if (r == w->getObjectRow() && c == w->getObjectCol())
+    for (GameObject* item : mItems)
+        if (r == item->getObjectRow() && c == item->getObjectCol())
         {
             return true;
         }
-    for (Scroll* s : mScrolls)
-    {
-        if (r == s->getObjectRow() && c == s->getObjectCol())
-            return true;
-    }
-    
     return false;
 }
 
@@ -168,7 +176,12 @@ void Temple::placeScrollsRandomly()
         }
     }
     s->setPosition(c, r);
-    mScrolls.push_back(s);
+    mItems.push_back(s);
+}
+
+bool Temple::isScroll(GameObject* item) const
+{
+    return (item->getName().substr(0, 6) == "scroll");
 }
 
 void Temple::placeMultipleWeapons()
@@ -224,7 +237,7 @@ void Temple::placeWeaponsRandomly()
     }
     
     w->setPosition(c, r);
-    mWeapons.push_back(w);
+    mItems.push_back(w);
     
 }
 
@@ -271,23 +284,22 @@ void Temple::display() const {
                 printed = true;
                 continue;
             }
-            for (Weapon* w : mWeapons)
+            for (GameObject* item : mItems)
             {
-                if (printed == false && c == w->getObjectCol() && r == w->getObjectRow())
+                if (printed == false && c == item->getObjectCol() && r == item->getObjectRow() && !isScroll(item))
                 {
+                    
                     cout << ")";
                     printed = true;
                     continue;
                 }
-            }
-            for (Scroll* s : mScrolls)
-            {
-                if (printed == false && c == s->getObjectCol() && r == s->getObjectRow())
+                else if (printed == false && c == item->getObjectCol() && r == item->getObjectRow()  && isScroll(item))
                 {
                     cout << "?";
                     printed = true;
                     continue;
                 }
+                //else statement for & and exiting game
             }
             
                 // loop through weapons & scroll objects
@@ -302,6 +314,47 @@ void Temple::display() const {
         cout << endl;
     }
     cout << "Level: " << mLevel << ", Hit points: " << getPlayer()->getHitPoints() << ", Armor: " << getPlayer()->getArmor() << ", Strength: " << getPlayer()->getStrength() << ", Dexterity: " << getPlayer()->getDexterity();
+}
+
+
+//FOR DEBUGGING
+Monster* Temple::getMonster(int index) const 
+{
+    if (index >= 0 && index < mMonsters.size()) 
+    {
+        return mMonsters[index];
+    }
+    return nullptr; // Return nullptr if the index is out of bounds
+}
+
+string Temple::getAllMonstersAttackStatus() const
+{
+    string allStatus;
+    for (const Monster* monster : mMonsters)
+    {
+        allStatus += "The " + monster->getAttackStatus();
+    }
+    return allStatus;
+}
+
+bool Temple::isAnyMonsterAttacking() const
+{
+    for (const Monster* monster : mMonsters)
+    {
+        if (monster->isAttacking())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Temple::resetMonstersAttackingStatus()
+{
+    for (Monster* monster : mMonsters)
+    {
+        monster->setAttacking(false);
+    }
 }
 
 bool Temple::determineNewPosition(int& r, int& c, char dir, char symbol)
@@ -357,37 +410,62 @@ void Temple::moveMonsters(Player* player)
     }
 }
 
-GameObject* Temple::findWeapon(int r, int c) {
-    for (auto i : mWeapons) {
-        if (i->getObjectCol() == c && i->getObjectRow() == r) return i;
-    }
-    return nullptr;
-}
 
-GameObject* Temple::findScroll(int r, int c) {
-    for (auto i : mScrolls) {
-        if (i->getObjectCol() == c && i->getObjectRow() == r) return i;
-    }
-    return nullptr;
-}
+void Temple::playerAttack()
+{
+    //makes sure player holds a weapon before
+    if (!mPlayer->getWeapon())
+        return;
+    
+    int targetRow = mPlayer->getRow();
+    int targetCol = mPlayer->getCol();
 
-void Temple::removeWeapon(int r, int c) {
-    for (vector<Weapon*>::iterator i = mWeapons.begin(); i != mWeapons.end(); i++) {
-        if ((*i)->getObjectCol() == c && (*i)->getObjectRow() == r) {
-            mWeapons.erase(i);
+
+    
+    switch (mPlayer->getLastDirection()) {
+        case ARROW_LEFT:
+            targetCol--;
+            break;
+        case ARROW_RIGHT:
+            targetCol++;
+            break;
+        case ARROW_UP:
+            targetRow--;
+            break;
+        case ARROW_DOWN:
+            targetRow++;
+    }
+    
+    for (Monster* m : mMonsters)
+    {
+        if (m->getRow() == targetRow && m->getCol() == targetCol) {
+            //DEBUGGING COUT
+            //cout << endl << "Player calculating whether to attack:" << endl;
+            mPlayer->attack(m);
             return;
         }
     }
 }
 
-void Temple::removeScroll(int r, int c) {
-    for (vector<Scroll*>::iterator i = mScrolls.begin(); i != mScrolls.end(); i++) {
+
+
+GameObject* Temple::findItems(int r, int c) {
+    for (auto i : mItems) {
+        if (i->getObjectCol() == c && i->getObjectRow() == r) return i;
+    }
+    return nullptr;
+}
+
+void Temple::removeItems(int r, int c) {
+    for (vector<GameObject*>::iterator i = mItems.begin(); i != mItems.end(); i++) {
         if ((*i)->getObjectCol() == c && (*i)->getObjectRow() == r) {
-            mScrolls.erase(i);
+            mItems.erase(i);
             return;
         }
     }
 }
+
+
 
 
 
