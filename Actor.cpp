@@ -12,8 +12,8 @@
 #include <iostream>
 
 //This section of code is for developing the base class Actor
-Actor::Actor(Temple* temple, const std::string& name, int hitPoints, Weapon* currWeapon, int armor, int strength, int dexterity, int sleepTime, int row, int col)
-    : mTemple(temple), mName(name), mHitPoints(hitPoints), mArmor(armor), mStrength(strength), mDexterity(dexterity), mSleepTime(sleepTime), currentWeapon(currWeapon), mRow(row), mCol(col)
+Actor::Actor(Temple* temple, const std::string& name, int hitPoints, int maxHitPoints, Weapon* currWeapon, int armor, int strength, int dexterity, int sleepTime, int row, int col)
+    : mTemple(temple), mName(name), mHitPoints(hitPoints), mMaxHitPoints(maxHitPoints), mArmor(armor), mStrength(strength), mDexterity(dexterity), mSleepTime(sleepTime), currentWeapon(currWeapon), mRow(row), mCol(col), mIsAttacking(false)
 {}
 
 int Actor::getRow() const
@@ -29,6 +29,11 @@ int Actor::getCol() const
 int Actor::getHitPoints() const
 {
     return mHitPoints;
+}
+
+int Actor::getMaxHitPoints() const
+{
+    return mMaxHitPoints;
 }
 
 int Actor::getArmor() const
@@ -66,6 +71,16 @@ Weapon* Actor::getWeapon() const
     return currentWeapon;
 }
 
+bool Actor::isAttacking() const
+{
+    return mIsAttacking;
+}
+
+void Actor::setAttacking(bool attacking)
+{
+    mIsAttacking = attacking;
+}
+
 void Actor::setPosition(int row, int col)
 {
     mRow = row;
@@ -75,6 +90,11 @@ void Actor::setPosition(int row, int col)
 void Actor::setHitPoints(int points)
 {
     mHitPoints = points;
+}
+
+void Actor::setMaxHitPoints(int maxHitPoints) 
+{
+    mMaxHitPoints = maxHitPoints;
 }
 
 void Actor::setArmor(int armor)
@@ -110,6 +130,11 @@ string Actor::getScrollStatus() const
     return mScrollStatus;
 }
 
+string Actor::getAttackStatus() const
+{
+    return mName + mAttackStatus;
+}
+
 //TODO FINISH IMPLEMENTING
 void Actor::readScroll(Scroll* scroll)
 {
@@ -121,34 +146,29 @@ void Actor::readScroll(Scroll* scroll)
     if (scroll->getName() == "scroll of improve armor")
     {
         /*
-         
+         CHECK IF IT CHANGES CHANCE TO HIT PLAYER
          CHANGECHANCE FOR HITTING PLAYER??
          
          */
-        this->setArmor(mArmor + randInt(1, 4));
+        this->setArmor(mArmor + randInt(1, 3));
         mScrollStatus = "\nYour armor glows sliver.\n";
     }
     if (scroll->getName() == "scroll of raise strength")
     {
-        this->setStrength(mStrength + randInt(1, 4));
+        this->setStrength(mStrength + randInt(1, 3));
         
         mScrollStatus = "\nYour muscles bulge.\n";
     }
     if (scroll->getName() == "scroll of enhance health")
     {
-        
-        //HAVE TO CREATE A SETTER FOR MAX HIT POINTS, IF YOU DO SET HITPOINTS IT HEALS YOU AUTOMATICALLY
-        //this-> FUNCTION(mHitPoints + randInt(1, 4));
-        
+        this-> setMaxHitPoints(mMaxHitPoints + randInt(3, 8));
         mScrollStatus = "\nYou feel your heart beating stronger.\n";
-        
     }
     if (scroll->getName() == "scroll of enhance dexterity")
     {
-        this->setDexterity(mDexterity + randInt(1, 4));
+        this->setDexterity(mDexterity + 1);
         mScrollStatus = "\nYou feel like less of a klutz.\n";
     }
-    
 }
 
 void Actor::setTemple(Temple* t)
@@ -160,23 +180,50 @@ void Actor::attack(Actor* target)
 {
     if (currentWeapon && target) //makes sure there is a valid weapon and a valid target
     {
+        mIsAttacking = true;
         if (currentWeapon->attackHits(mDexterity, target->getDexterity(), target->getArmor()))
         {
+            //DEBUGGING COUT
+            //cout << endl << "ENTERING DAMAGE NOW" << endl;
+            
+            
             int damage = currentWeapon->calculateDamageAmount(mStrength);
             target->takeDamage(damage);
-
             
-            // Special case for magic fangs of sleep
+            //DEBUGGING COUT
+            //cout << endl << "damaged applied";
+            
+            //special case for magic fangs of sleep
             MagicFangsOfSleep* magicFangs = dynamic_cast<MagicFangsOfSleep*>(currentWeapon);
             if (magicFangs)
             {
                 magicFangs->putToSleep(target->mSleepTime);
             }
+            
+            mAttackStatus = " " + this->getWeapon()->getAction() + " at " + target->getName() + " and hits.";
+        }
+        else
+        {
+            mAttackStatus = " " + this->getWeapon()->getAction() + " at " + target->getName() + " and misses.";
         }
     }
-    cout << "hello";
-    int damage = currentWeapon->getWeaponDamageAmount();
-    target->mHitPoints -= damage;
+    else
+    {
+        mIsAttacking = false;
+    }
+}
+
+
+
+void Actor::regainHitPoint(int maxHitPoints)
+{
+    if(randInt(1, 10) == 1)
+    {
+        if(getHitPoints() < maxHitPoints)
+        {
+            setHitPoints(getHitPoints() + 1);
+        }
+    }
 }
 
 void Actor::move(char dir)
