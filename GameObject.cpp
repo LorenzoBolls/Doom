@@ -63,8 +63,17 @@ int Weapon::getDexterityBonus() const
 bool Weapon::attackHits(int attackerDexterity, int defenderDexterity, int defenderArmor) const
 {
     int attackerPoints = attackerDexterity + mWeaponDexterityBonus;
+    int attackVal = randInt(1, attackerPoints);
+    
+    //DEBUGGING COUT
+    //cout << endl << "attack: " << attackVal << endl;
+    
     int defenderPoints = defenderDexterity + defenderArmor;
-    return attackerPoints >= defenderPoints;
+    int defendVal = randInt(1, defenderPoints);
+    
+    //DEBUGGING COUT
+    //cout << "defend: " << defendVal << endl;
+    return attackVal >= defendVal;
 }
 
 int Weapon::calculateDamageAmount(int attackerStrength) const
@@ -112,7 +121,7 @@ Scroll::~Scroll()
 ScrollOfTeleportation::ScrollOfTeleportation() : Scroll("scroll of teleportation")
 {}
 
-ScrollOfImproveArmor::ScrollOfImproveArmor() : Scroll("scroll of improved armor")
+ScrollOfImproveArmor::ScrollOfImproveArmor() : Scroll("scroll of improve armor")
 {}
 
 ScrollOfEnhanceHealth::ScrollOfEnhanceHealth() : Scroll("scroll of enhance health")
