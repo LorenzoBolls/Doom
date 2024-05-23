@@ -26,13 +26,14 @@ class Scroll;
 class Actor
 {
 public:
-    Actor(Temple* temple, const std::string& name, int hitPoints, Weapon* currWeapon, int armor, int strength, int dexterity, int sleepTime, int row, int col);
+    Actor(Temple* temple, const std::string& name, int hitPoints, int maxHitPoints, Weapon* currWeapon, int armor, int strength, int dexterity, int sleepTime, int row, int col);
 
     
     //accessors
     int getRow() const;
     int getCol() const;
     int getHitPoints() const;
+    int getMaxHitPoints() const;
     int getArmor() const;
     int getStrength() const;
     int getDexterity() const;
@@ -41,10 +42,12 @@ public:
     Weapon* getWeapon() const;
     Temple* getTemple() const;
     string getScrollStatus() const;
-    
+    string getAttackStatus() const;
+
     //mutators/modifiers
     void setPosition(int row, int col);
     void setHitPoints(int points);
+    void setMaxHitPoints(int maxHitPoints);
     void setArmor(int armor);
     void setStrength(int strength);
     void setDexterity(int dexterity);
@@ -52,6 +55,7 @@ public:
     void equipWeapon(Weapon* weapon);
     void setTemple(Temple* t);
     void readScroll(Scroll* scroll);
+    void setAttacking(bool attacking);
     
     //actions
     virtual void attack(Actor* target);
@@ -59,13 +63,18 @@ public:
     void decreaseSleepTime();
     void move(char dir);
     
+    bool isAttacking() const;
+    
+    void regainHitPoint(int maxHitPoints);
+    
     virtual ~Actor();
     
 private:
     string mName;
-    string mScrollStatus;
+    string mScrollStatus, mAttackStatus;
+    bool mIsAttacking;
     int mRow, mCol;
-    int mHitPoints, mArmor, mStrength, mDexterity, mSleepTime;
+    int mHitPoints, mMaxHitPoints, mArmor, mStrength, mDexterity, mSleepTime;
     Weapon* currentWeapon;
     Temple* mTemple;
 };
@@ -76,10 +85,8 @@ public:
     Player(Temple* temple, int row, int col);
     virtual ~Player();
     
-    void regainHitPoint(int maxHitPoints);
     
-    
-    void attack(Actor* target);
+    //void attack(Actor* target);
     
     
     //TODO
@@ -98,15 +105,18 @@ public:
     const vector<GameObject*>& getInventory();
     void setInventory(vector<GameObject*> inv);
     void removeFromInventory(GameObject* remove);
+    
+    char getLastDirection() const;
 
 private:
     vector<GameObject*> Inventory;
+    char lastDirection;
 };
 
 class Monster : public Actor
 {
 public:
-    Monster(Temple* currTemple, const string& name, int hitPoints, Weapon* currWeapon, int armor, int strength, int dexterity, int row, int col);
+    Monster(Temple* currTemple, const string& name, int hitPoints, int maxHitPoints, Weapon* currWeapon, int armor, int strength, int dexterity, int row, int col);
     
     virtual void takeTurn(Player* player) = 0;
     virtual ~Monster();
