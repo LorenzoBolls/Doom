@@ -132,7 +132,7 @@ string Actor::getScrollStatus() const
 
 string Actor::getAttackStatus() const
 {
-    return mName + mAttackStatus;
+    return mAttackStatus;
 }
 
 //TODO FINISH IMPLEMENTING
@@ -200,11 +200,11 @@ void Actor::attack(Actor* target)
                 magicFangs->putToSleep(target->mSleepTime);
             }
             
-            mAttackStatus = " " + this->getWeapon()->getAction() + " at " + target->getName() + " and hits.";
+            mAttackStatus = " " + this->getWeapon()->getAction() + " at " + target->getName() + " and hits.\n";
         }
         else
         {
-            mAttackStatus = " " + this->getWeapon()->getAction() + " at " + target->getName() + " and misses.";
+            mAttackStatus = " " + this->getWeapon()->getAction() + " at " + target->getName() + " and misses.\n";
         }
     }
     else
@@ -247,5 +247,6 @@ void Actor::decreaseSleepTime()
 }
 
 Actor::~Actor()
-{}
+{
+}
 
