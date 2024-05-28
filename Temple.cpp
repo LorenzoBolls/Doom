@@ -14,9 +14,10 @@ using namespace std;
 Temple::Temple(int goblinSmellDistance, int level)
     : mGoblinSmellDistance(goblinSmellDistance), mLevel(level), mPlayer(nullptr)
 {
-    // Initialize the grid
-    for(int r = 0; r <= TEMPLE_ROWS; r++)
-        for(int c = 0; c <= TEMPLE_COLUMNS; c++){
+//    generateRooms();
+//     Initialize the grid
+    for(int r = 0; r < TEMPLE_ROWS; r++)
+        for(int c = 0; c < TEMPLE_COLUMNS; c++){
             //draw wall
             if(r <= 0 || c <= 0 || r >= 17 || c >= 69)
                 temple[r][c] = '#';
@@ -32,6 +33,11 @@ Temple::~Temple() {
     for (Monster* monster : mMonsters)
     {
         delete monster;
+    }
+    
+    for (GameObject* item : mItems)
+    {
+        delete item;
     }
 }
 
@@ -67,21 +73,22 @@ bool Temple::blockedPosition(int r, int c)
     //add all the monsters and weapons to this function
 }
 
+void Temple::generateUnblockedPosition(int& r, int& c)
+{
+    do {
+        r = randInt(1, TEMPLE_ROWS - 1);
+        c = randInt(1, TEMPLE_COLUMNS - 1);
+    } while(blockedPosition(r, c));
+}
+
 bool Temple::isDescendPosition(int r, int c)
 {
     return r == mDescend_r && c == mDescend_c;
 }
 
 void Temple::placePlayerRandomly() {
-    int r = randInt(1, TEMPLE_ROWS);
-    int c = randInt(1, TEMPLE_COLUMNS);
-
-    //its ok to spawn on top of weapons so implement that later in blockedPosition
-    while(blockedPosition(r, c))
-    {
-        r = randInt(1, TEMPLE_ROWS);
-        c = randInt(1, TEMPLE_COLUMNS);
-    }
+    int r, c;
+    generateUnblockedPosition(r, c);
 
      if (mPlayer != nullptr) //player already exists
      {
@@ -103,14 +110,10 @@ void Temple::placePlayerRandomly() {
 
 void Temple::placeDescendPoint()
 {
-    mDescend_r = randInt(1, TEMPLE_ROWS);
-    mDescend_c = randInt(1, TEMPLE_COLUMNS);
-    
-    while(blockedPosition(mDescend_r, mDescend_c))
-    {
-        mDescend_r = randInt(1, TEMPLE_ROWS);
-        mDescend_c = randInt(1, TEMPLE_COLUMNS);
-    }
+    int r, c;
+    generateUnblockedPosition(r, c);
+    mDescend_r = r;
+    mDescend_c = c;
 }
 
 
@@ -124,26 +127,46 @@ bool Temple::isGameObjectAt(int r, int c)
     return false;
 }
 
-void Temple::placeMultipleScrolls()
+void Temple::placeMultipleGameObjects()
 {
-    int n = randInt(1, 3);
-    for (int i = 0; i < n; i++)
+    int mW = randInt(0,3);
+    int mS = 0;
+    
+    mS = randInt(2-mW, 3-mW);
+    if (mW == 3)
+    {
+        mS = 0;
+    }
+    for(int i = 0; i < mW; i++)
+    {
+        placeWeaponsRandomly();
+    }
+    for(int i = 0; i < mS; i++)
     {
         placeScrollsRandomly();
     }
 }
 
+//void Temple::placeMultipleScrolls()
+//{
+//    int n = randInt(1, 2);
+//    for (int i = 0; i < n; i++)
+//    {
+//        placeScrollsRandomly();
+//    }
+//}
+
 void Temple::placeScrollsRandomly()
 {
     int scrollType = randInt(1, 5);
     
-    int r = randInt(1, TEMPLE_ROWS);
-    int c = randInt(1, TEMPLE_COLUMNS);
+    int r = randInt(1, TEMPLE_ROWS - 1);
+    int c = randInt(1, TEMPLE_COLUMNS - 1);
     
     while (blockedPosition(r, c) || isGameObjectAt(r, c) || isDescendPosition(r, c))
     {
-        r = randInt(1, TEMPLE_ROWS);
-        c = randInt(1, TEMPLE_COLUMNS);
+        r = randInt(1, TEMPLE_ROWS - 1);
+        c = randInt(1, TEMPLE_COLUMNS - 1);
     }
     
     Scroll* s = nullptr;
@@ -184,26 +207,26 @@ bool Temple::isScroll(GameObject* item) const
     return (item->getName().substr(0, 6) == "scroll");
 }
 
-void Temple::placeMultipleWeapons()
-{
-    int n = randInt(1, 3);
-    for (int i = 0; i < n; i++)
-    {
-        placeWeaponsRandomly();
-    }
-}
+//void Temple::placeMultipleWeapons()
+//{
+//    int n = randInt(1, 2);
+//    for (int i = 0; i < n; i++)
+//    {
+//        placeWeaponsRandomly();
+//    }
+//}
 
 void Temple::placeWeaponsRandomly()
 {
     int weaponType = randInt(1,5);
     
-    int r = randInt(1, TEMPLE_ROWS);
-    int c = randInt(1, TEMPLE_COLUMNS);
+    int r = randInt(1, TEMPLE_ROWS - 1);
+    int c = randInt(1, TEMPLE_COLUMNS - 1);
     
     while (blockedPosition(r, c) || isGameObjectAt(r, c) || isDescendPosition(r, c))
     {
-        r = randInt(1, TEMPLE_ROWS);
-        c = randInt(1, TEMPLE_COLUMNS);
+        r = randInt(1, TEMPLE_ROWS - 1);
+        c = randInt(1, TEMPLE_COLUMNS - 1);
     }
     
     Weapon* w = nullptr;
@@ -243,22 +266,33 @@ void Temple::placeWeaponsRandomly()
 
 void Temple::generateMonsters()
 {
-    //bogeymen appear after level 2 or deeper
-    if (mLevel >= 2)
+    int numMonsters = randInt(2, 5 * (mLevel + 1) + 1);
+    for (int i = 0; i < numMonsters; ++i)
     {
-        int r = randInt(1, TEMPLE_ROWS);
-        int c = randInt(1, TEMPLE_COLUMNS);
+        int r, c;
+        generateUnblockedPosition(r, c);
         
-        while(blockedPosition(r, c))
-        {
-            r = randInt(1, TEMPLE_ROWS);
-            c = randInt(1, TEMPLE_COLUMNS);
+        int monsterType = randInt(0, 2); // Example: 0 for Bogeymen, 1 for Snakewomen, 2 for Goblins
+        
+        switch (monsterType) {
+            case 0:
+                mMonsters.push_back(new Snakewomen(this, r, c));
+            
+                break;
+            case 1:
+                mMonsters.push_back(new Goblins(this, r, c));
+                break;
+            case 2:
+                if (mLevel >= 2)
+                {
+                    mMonsters.push_back(new Bogeymen(this, r, c));
+                }
+                break;
+                // Add other monster types here
+            default:
+                break;
         }
-
-        mMonsters.push_back(new Bogeymen(this, r, c));
-//        temple[r][c] = 'B';
     }
-     
 }
 
 void Temple::display() const {
@@ -270,7 +304,7 @@ void Temple::display() const {
             bool printed = false;
             if (r == mPlayer->getRow() && c == mPlayer->getCol()) {
                 cout << "@";
-                printed = true;
+                printed = true; //now you only display the @ sign when on top of other objects
                 continue;
             }
             for (Monster* m : mMonsters) {
@@ -327,14 +361,32 @@ Monster* Temple::getMonster(int index) const
     return nullptr; // Return nullptr if the index is out of bounds
 }
 
-string Temple::getAllMonstersAttackStatus() const
+string Temple::getAllMonstersAttackStatus()
 {
     string allStatus;
-    for (const Monster* monster : mMonsters)
+    for (Monster* monster : mMonsters)
     {
-        allStatus += "The " + monster->getAttackStatus();
+        if (monster->getAttackStatus() != "" && isNextToPlayer(monster))
+        {
+            allStatus += "The " + monster->getName() + monster->getAttackStatus();
+        }
     }
     return allStatus;
+}
+
+bool Temple::isNextToPlayer(Monster* monster)
+{
+    int playerRow = mPlayer->getRow();
+    int playerCol = mPlayer->getCol();
+
+    //if adjacent to player, attack
+    if (abs(playerRow - monster->getRow()) + abs(playerCol - monster->getCol()) == 1)
+    {
+        //FOR DEBUGGING
+        //cout << endl << "bogeymen calculating whether to attack: " << endl;
+        return true;
+    }
+    return false;
 }
 
 bool Temple::isAnyMonsterAttacking() const
@@ -406,10 +458,30 @@ void Temple::moveMonsters(Player* player)
 {
     for (Monster* monster : mMonsters)
     {
+        
+        //write if statements later
         monster->takeTurn(player);
+        if(monster->getName() == "Goblin")
+        {
+            Goblins* goblin = dynamic_cast<Goblins*>(monster);
+            char goblinTemple[TEMPLE_ROWS][TEMPLE_COLUMNS];
+            copyTemple(this->temple, goblinTemple);
+            
+            cout << goblin->pathExistsToPlayer(goblinTemple, goblin->getRow(), goblin->getCol(), getPlayer()->getRow(), getPlayer()->getCol(), 15);
+        }
     }
 }
 
+void Temple::copyTemple(const char temple[TEMPLE_ROWS][TEMPLE_COLUMNS], char destination[TEMPLE_ROWS][TEMPLE_COLUMNS])
+{
+    for (int i = 0; i < TEMPLE_ROWS; i++)
+    {
+        for (int j = 0; j < TEMPLE_COLUMNS; j++)
+        {
+            destination[i][j] = temple[i][j];
+        }
+    }
+}
 
 void Temple::playerAttack()
 {
@@ -465,6 +537,115 @@ void Temple::removeItems(int r, int c) {
     }
 }
 
+void Temple::addItem(GameObject* item)
+{
+    mItems.push_back(item);
+}
+
+void Temple::clearPosition(int r, int c)
+{
+    temple[r][c] = ' ';
+}
+
+void Temple::removeMonster(Monster* monster)
+{
+    auto it = std::find(mMonsters.begin(), mMonsters.end(), monster);
+    if (it != mMonsters.end()) {
+        mMonsters.erase(it);
+    }
+    delete monster;
+}
+
+
+void Temple::generateRooms()
+{
+    //fill the entire grid with walls
+    for (int r = 0; r < TEMPLE_ROWS; ++r)
+    {
+        for (int c = 0; c < TEMPLE_COLUMNS; ++c)
+        {
+            temple[r][c] = '#';
+        }
+    }
+
+    //etermine the number of rooms
+    int numRooms = randInt(3, 7);
+
+    for (int i = 0; i < numRooms; ++i)
+    {
+        int roomWidth = randInt(MIN_ROOM_WIDTH, MAX_ROOM_WIDTH);
+        int roomHeight = randInt(MIN_ROOM_HEIGHT, MAX_ROOM_HEIGHT);
+        int startRow, startCol;
+        int roomAttemptCounter = 0;
+
+        cout << "room width: " << roomWidth << "room height: " << roomHeight;
+        // Ensure the room doesn't overlap with existing rooms
+        do
+        {
+            
+            startRow = randInt(0, TEMPLE_ROWS - roomHeight - 1);
+            startCol = randInt(0, TEMPLE_COLUMNS - roomWidth - 1);
+            roomAttemptCounter++;
+            
+
+            cout << "start row: " << startRow << endl;
+            cout << "start col: " << startCol << endl;
+            
+        } while (!isAreaClear(startRow, startCol, roomHeight, roomWidth) && roomAttemptCounter != 10);
+        
+        if (roomAttemptCounter == 10)
+        {
+            cout << "breaked out\n";
+            break;
+        }
+        
+        int endRow = startRow + roomHeight;
+        int endCol = startCol + roomWidth;
+        
+        vector<int> coords = {startRow, startCol, endRow, endCol};
+        mRooms.push_back(coords);
+
+        // Place the room in the grid
+        placeRoom(startRow, startCol, roomHeight, roomWidth);
+        cout << numRooms << endl;
+        cout << "ROOMS PRINTED SUCCESSFULLY" << endl;
+    }
+}
+
+bool Temple::isAreaClear(int startRow, int startCol, int height, int width)
+{
+    //makes sure a new room isn't placed within the coordinates of another room
+    for (int r = startRow; r <= startRow + height; ++r)
+    {
+        for (int c = startCol; c <= startCol + width; ++c)
+        {
+            for(vector<int> coords : mRooms)
+            {
+                if (r > coords[0] && r < coords[2] && c > coords[1] && c < coords[3])
+                {
+                    cout << "returning false: ";
+                    cout << "r: " << r << " c: " << c << " coords 0: " << coords[0] << " " << coords[1] << "coords 2: " << coords[2] << " " << coords[3] << endl;
+                    return false;
+                }
+            }
+        }
+    }
+    cout << "returning true: ";
+    cout << "startRow: " << startRow << "startCol: " << startCol << " end row: " << startRow+height << " end col: " << startCol+width << endl;
+    return true;
+}
+
+void Temple::placeRoom(int startRow, int startCol, int height, int width)
+{
+    for (int r = startRow + 1; r < startRow + height - 1; ++r)
+    {
+        for (int c = startCol + 1; c < startCol + width -1; ++c)
+        {
+            temple[r][c] = ' ';
+        }
+    }
+}
+//
 
 
 
