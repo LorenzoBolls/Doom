@@ -14,10 +14,10 @@
 #include <vector>
 using namespace std;
 
-const int MIN_ROOM_WIDTH = 3;
-const int MIN_ROOM_HEIGHT = 3;
-const int MAX_ROOM_WIDTH = 9;
-const int MAX_ROOM_HEIGHT = 9;
+const int MIN_ROOM_WIDTH = 7;
+const int MIN_ROOM_HEIGHT = 7;
+const int MAX_ROOM_WIDTH = 16;
+const int MAX_ROOM_HEIGHT = 10;
 
 const int MIN_HALL_LENGTH = 1;
 const int MAX_HALL_LENGTH = 10;
@@ -52,11 +52,14 @@ public:
     
     void moveMonsters(Player* player);
     
+    
+    void placeMultipleGameObjects();
+    
     void placeWeaponsRandomly();
-    void placeMultipleWeapons();
+//    void placeMultipleWeapons();
     
     void placeScrollsRandomly();
-    void placeMultipleScrolls();
+//    void placeMultipleScrolls();
     
     GameObject* findItems(int r, int c);
 
@@ -69,10 +72,23 @@ public:
     //DEBUGGING
     Monster* getMonster(int index) const;
 
-    string getAllMonstersAttackStatus() const;
+    string getAllMonstersAttackStatus();
     void resetMonstersAttackingStatus();
     bool isAnyMonsterAttacking() const;
 
+    void generateRooms();
+    bool isAreaClear(int startRow, int startCol, int height, int width);
+    void placeRoom(int startRow, int startCol, int height, int width);
+    
+    void generateUnblockedPosition(int& r, int& c);
+    
+    void addItem(GameObject* item);
+    void clearPosition(int r, int c);
+    void removeMonster(Monster* monster);
+    
+    bool isNextToPlayer(Monster* monster);
+    
+    void copyTemple(const char temple[TEMPLE_ROWS][TEMPLE_COLUMNS], char destination[TEMPLE_ROWS][TEMPLE_COLUMNS]);
     
     
     /*
@@ -90,6 +106,9 @@ private:
     Player* mPlayer;
     std::vector<Monster*> mMonsters;
     std::vector<GameObject*> mItems;
+    
+    std::vector<std::vector<int>> mRooms;
+    
     int mDescend_r;
     int mDescend_c;
     char temple[TEMPLE_ROWS][TEMPLE_COLUMNS];
