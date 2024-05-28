@@ -24,7 +24,8 @@ Player::Player(Temple* playerTemple, int row, int col) : Actor(playerTemple, "Pl
 }
 
 Player::~Player()
-{}
+{
+}
 
 
 
@@ -122,18 +123,11 @@ void Player::viewInventory()
     }
 }
 
+//converts a to index 0, b to index 1 and so on
 int Player::convertCharToInt(char val)
 {
     return (int)(val) - (int)('a');
 }
-
-//FIX
-//bool Player::isScroll(GameObject* item)
-//{
-//    GameObject* lastItem = Inventory.at(Inventory.size()-1);
-//    return (lastItem->getName().substr(0, 5) == "scroll");
-//}
-
 
 const vector<GameObject*>& Player::getInventory()
 {
