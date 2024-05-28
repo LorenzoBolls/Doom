@@ -10,23 +10,32 @@ using namespace std;
 
 Game::Game(int goblinSmellDistance)
 {
+    
     mGoblinSmellDistance = goblinSmellDistance;
     
     //change (goblinSmellDistance, #) back to 0
-    mGameTemple = new Temple(goblinSmellDistance, 2);
+    mGameTemple = new Temple(goblinSmellDistance, 0);
     mGameTemple->placePlayerRandomly();
     mGameTemple->placeDescendPoint();
     
     //CHECK THIS AGAIN MIGHT HAVE TO DELETE
-    mGameTemple->generateMonsters();
-    mGameTemple->placeMultipleWeapons();
-    mGameTemple->placeMultipleScrolls();
+//    mNumMonsters = randInt(2, 5 * (mGameTemple->getLevel() + 1) + 1);
+//    for (int i = 0; i < mNumMonsters; i++)
+//    {
+        mGameTemple->generateMonsters();
+//    }
+    
+    mGameTemple->placeMultipleGameObjects();
+//    mGameTemple->placeMultipleWeapons();
+//    mGameTemple->placeMultipleScrolls();
     
 
 }
 
 Game::~Game()
-{}
+{
+    delete mGameTemple;
+}
 
 void Game::play()
 {
@@ -95,6 +104,7 @@ void Game::play()
         if(ch == 'c')
         {
             gamePlayer->setHitPoints(50);
+            gamePlayer->setMaxHitPoints(50);
             gamePlayer->setStrength(9);
         }
         
@@ -165,12 +175,12 @@ void Game::play()
             //couting states underneath display
             if (gamePlayer->isAttacking())
             {
-                cout << endl << gamePlayer->getAttackStatus();
+                cout << endl << gamePlayer->getName() << gamePlayer->getAttackStatus();
                 gamePlayer->setAttacking(false);
             }
             if (mGameTemple->isAnyMonsterAttacking())
             {
-                cout << endl << mGameTemple->getAllMonstersAttackStatus();
+                cout << mGameTemple->getAllMonstersAttackStatus();
                 mGameTemple->resetMonstersAttackingStatus();
             }
             if (pickedUpStatus)
@@ -182,6 +192,7 @@ void Game::play()
             {
                 cout << statusOutput;
                 cout << scrollOutput;
+                scrollOutput = "";
                 updatedStatus = false;
             }
         }
@@ -219,9 +230,18 @@ void Game::descend()
     newPlayer->setInventory(oldInventory);
     
     mGameTemple->placeDescendPoint();
-    mGameTemple->generateMonsters();
-    mGameTemple->placeMultipleWeapons();
-    mGameTemple->placeMultipleScrolls();
+    
+    
+//    mNumMonsters = randInt(2, 5 * (mGameTemple->getLevel() + 1) + 1);
+//    for (int i = 0; i < mNumMonsters; i++)
+//    {
+        mGameTemple->generateMonsters();
+//    }
+    
+    mGameTemple->placeMultipleGameObjects();
+    
+//    mGameTemple->placeMultipleWeapons();
+//    mGameTemple->placeMultipleScrolls();
 }
 
 
