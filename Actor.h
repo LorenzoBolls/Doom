@@ -116,26 +116,43 @@ private:
 class Monster : public Actor
 {
 public:
-    Monster(Temple* currTemple, const string& name, int hitPoints, int maxHitPoints, Weapon* currWeapon, int armor, int strength, int dexterity, int row, int col);
+    Monster(Temple* currTemple, const string& name, int hitPoints, int maxHitPoints, Weapon* currWeapon, int armor, int strength, int dexterity, int row, int col, int mSmellDistance);
     
-    virtual void takeTurn(Player* player) = 0;
+    virtual void takeTurn(Player* player);
     virtual ~Monster();
+    void setSmellDistance(int distance);
+    int getSmellDistance() const;
+    void die();
+    
+private:
+    int mSmellDistance;
 };
 
 class Bogeymen : public Monster
 {
 public:
     Bogeymen(Temple* currBogeymenTemple, int row, int col);
-    virtual void takeTurn(Player* player);
+
 };
 
 class Snakewomen : public Monster
-{};
+{
+public:
+    Snakewomen(Temple* currSnakewomenTemple, int row, int col);
+    
+};
 
 class Dragon : public Monster
-{};
+{
+public:
+    Dragon(Temple* currDragonTemple, int row, int col);
+};
 
 class Goblins : public Monster
-{};
+{
+public:
+    Goblins(Temple* currGoblinTemple, int row, int col);
+    bool pathExistsToPlayer(char currTemple[18][70], int sR, int sC, int playerRow, int playerCol, int stepsTaken);
+};
 
 #endif /* ACTOR_INCLUDED */
