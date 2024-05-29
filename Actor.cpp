@@ -1,252 +1,155 @@
-//  Actors.cpp
-//  Project 3
+// Actors.cpp
+// Project 3
 //
-//  Created by Lorenzo Bolls on 5/10/24.
+// Created by Lorenzo Bolls on 5/10/24.
 //
 
 #include "Actor.h"
 #include "utilities.h"
 #include "GameObject.h"
-#include <string>
 #include "Temple.h"
+#include <string>
 #include <iostream>
 
-//This section of code is for developing the base class Actor
+// Constructor
 Actor::Actor(Temple* temple, const std::string& name, int hitPoints, int maxHitPoints, Weapon* currWeapon, int armor, int strength, int dexterity, int sleepTime, int row, int col)
     : mTemple(temple), mName(name), mHitPoints(hitPoints), mMaxHitPoints(maxHitPoints), mArmor(armor), mStrength(strength), mDexterity(dexterity), mSleepTime(sleepTime), currentWeapon(currWeapon), mRow(row), mCol(col), mIsAttacking(false)
 {}
 
-int Actor::getRow() const
-{
-    return mRow;
-}
+// Getters
+int Actor::getRow() const { return mRow; }
+int Actor::getCol() const { return mCol; }
+int Actor::getHitPoints() const { return mHitPoints; }
+int Actor::getMaxHitPoints() const { return mMaxHitPoints; }
+int Actor::getArmor() const { return mArmor; }
+int Actor::getStrength() const { return mStrength; }
+int Actor::getDexterity() const { return mDexterity; }
+int Actor::getSleepTime() const { return mSleepTime; }
+std::string Actor::getName() const { return mName; }
+Temple* Actor::getTemple() const { return mTemple; }
+Weapon* Actor::getWeapon() const { return currentWeapon; }
+bool Actor::isAttacking() const { return mIsAttacking; }
+std::string Actor::getScrollStatus() const { return mScrollStatus; }
+std::string Actor::getAttackStatus() const { return mAttackStatus; }
 
-int Actor::getCol() const
-{
-    return mCol;
-}
+// Setters
+void Actor::setAttacking(bool attacking) { mIsAttacking = attacking; }
+void Actor::setPosition(int row, int col) { mRow = row; mCol = col; }
+void Actor::setHitPoints(int points) { mHitPoints = points; }
+void Actor::setMaxHitPoints(int maxHitPoints) { mMaxHitPoints = maxHitPoints; }
+void Actor::setArmor(int armor) { mArmor = armor; }
+void Actor::setStrength(int strength) { mStrength = strength; }
+void Actor::setDexterity(int dexterity) { mDexterity = dexterity; }
+void Actor::setSleepTime(int sleepTime) { mSleepTime = sleepTime; }
+void Actor::setTemple(Temple* t) { mTemple = t; }
 
-int Actor::getHitPoints() const
-{
-    return mHitPoints;
-}
-
-int Actor::getMaxHitPoints() const
-{
-    return mMaxHitPoints;
-}
-
-int Actor::getArmor() const
-{
-    return mArmor;
-}
-
-int Actor::getStrength() const
-{
-    return mStrength;
-}
-
-int Actor::getDexterity() const
-{
-    return mDexterity;
-}
-
-int Actor::getSleepTime() const
-{
-    return mSleepTime;
-}
-
-std::string Actor::getName() const
-{
-    return mName;
-}
-
-Temple* Actor::getTemple() const
-{
-    return mTemple;
-}
-
-Weapon* Actor::getWeapon() const
-{
-    return currentWeapon;
-}
-
-bool Actor::isAttacking() const
-{
-    return mIsAttacking;
-}
-
-void Actor::setAttacking(bool attacking)
-{
-    mIsAttacking = attacking;
-}
-
-void Actor::setPosition(int row, int col)
-{
-    mRow = row;
-    mCol = col;
-}
-
-void Actor::setHitPoints(int points)
-{
-    mHitPoints = points;
-}
-
-void Actor::setMaxHitPoints(int maxHitPoints) 
-{
-    mMaxHitPoints = maxHitPoints;
-}
-
-void Actor::setArmor(int armor)
-{
-    mArmor = armor;
-}
-
-void Actor::setStrength(int strength)
-{
-    mStrength = strength;
-}
-
-void Actor::setDexterity(int dexterity)
-{
-    mDexterity = dexterity;
-}
-
-void Actor::setSleepTime(int sleepTime)
-{
-    this->mSleepTime = sleepTime;
-}
-
-void Actor::equipWeapon(Weapon* weapon)
-{
+// Equip a new weapon
+void Actor::equipWeapon(Weapon* weapon) {
     if (currentWeapon != weapon) {
-        /*delete currentWeapon;*/ // Delete the old weapon
+        // Uncomment if you want to delete the old weapon
+        // delete currentWeapon;
         currentWeapon = weapon;
     }
 }
 
-string Actor::getScrollStatus() const
-{
-    return mScrollStatus;
-}
-
-string Actor::getAttackStatus() const
-{
-    return mAttackStatus;
-}
-
-//TODO FINISH IMPLEMENTING
-void Actor::readScroll(Scroll* scroll)
-{
-    if (scroll->getName() == "scroll of teleportation")
-    {
+// Read a scroll and apply its effects
+void Actor::readScroll(Scroll* scroll) {
+    if (scroll->getName() == "scroll of teleportation") {
         mTemple->placePlayerRandomly();
         mScrollStatus = "\nYou feel your body wrenched in space and time.\n";
     }
-    if (scroll->getName() == "scroll of improve armor")
-    {
-        /*
-         CHECK IF IT CHANGES CHANCE TO HIT PLAYER
-         CHANGECHANCE FOR HITTING PLAYER??
-         
-         */
-        this->setArmor(mArmor + randInt(1, 3));
-        mScrollStatus = "\nYour armor glows sliver.\n";
+    else if (scroll->getName() == "scroll of improve armor") {
+        setArmor(mArmor + randInt(1, 3));
+        mScrollStatus = "\nYour armor glows silver.\n";
     }
-    if (scroll->getName() == "scroll of raise strength")
-    {
-        this->setStrength(mStrength + randInt(1, 3));
-        
+    else if (scroll->getName() == "scroll of raise strength") {
+        setStrength(mStrength + randInt(1, 3));
         mScrollStatus = "\nYour muscles bulge.\n";
     }
-    if (scroll->getName() == "scroll of enhance health")
-    {
-        this-> setMaxHitPoints(mMaxHitPoints + randInt(3, 8));
+    else if (scroll->getName() == "scroll of enhance health") {
+        setMaxHitPoints(mMaxHitPoints + randInt(3, 8));
         mScrollStatus = "\nYou feel your heart beating stronger.\n";
     }
-    if (scroll->getName() == "scroll of enhance dexterity")
-    {
-        this->setDexterity(mDexterity + 1);
+    else if (scroll->getName() == "scroll of enhance dexterity") {
+        setDexterity(mDexterity + 1);
         mScrollStatus = "\nYou feel like less of a klutz.\n";
     }
 }
 
-void Actor::setTemple(Temple* t)
-{
-    mTemple = t;
-}
-
-void Actor::attack(Actor* target)
-{
-    if (currentWeapon && target) //makes sure there is a valid weapon and a valid target
-    {
+// Attack another actor
+void Actor::attack(Actor* target) {
+    if (currentWeapon && target) {
         mIsAttacking = true;
-        if (currentWeapon->attackHits(mDexterity, target->getDexterity(), target->getArmor()))
-        {
-            //DEBUGGING COUT
-            //cout << endl << "ENTERING DAMAGE NOW" << endl;
-            
-            
+        if (currentWeapon->attackHits(mDexterity, target->getDexterity(), target->getArmor())) {
             int damage = currentWeapon->calculateDamageAmount(mStrength);
             target->takeDamage(damage);
-            
-            //DEBUGGING COUT
-            //cout << endl << "damaged applied";
-            
-            //special case for magic fangs of sleep
+
+            // Check if currentWeapon is a MagicFangsOfSleep
             MagicFangsOfSleep* magicFangs = dynamic_cast<MagicFangsOfSleep*>(currentWeapon);
-            if (magicFangs)
-            {
-                magicFangs->putToSleep(target->mSleepTime);
+            if (magicFangs) {
+                if (magicFangs->putToSleep(target->mSleepTime)) {
+                    mAttackStatus = " " + getWeapon()->getAction() + " at " + target->getName() + " and hits, putting " + target->getName() + " to sleep.\n";
+                } else {
+                    mAttackStatus = " " + getWeapon()->getAction() + " at " + target->getName() + " and hits.\n";
+                }
+            } else {
+                mAttackStatus = " " + getWeapon()->getAction() + " at " + target->getName() + " and hits.\n";
             }
-            
-            mAttackStatus = " " + this->getWeapon()->getAction() + " at " + target->getName() + " and hits.\n";
+
+            // Check if the target is dead
+            if (target->getHitPoints() <= 0) {
+                if (target->getName() == "Player") {
+                    mAttackStatus = " " + getWeapon()->getAction() + " at " + target->getName() + " and hits, dealing a final blow.\n";
+                } else {
+                    mAttackStatus += "dealing a final blow.\n";
+                }
+            }
+        } else {
+            mAttackStatus = " " + getWeapon()->getAction() + " at " + target->getName() + " and misses.\n";
         }
-        else
-        {
-            mAttackStatus = " " + this->getWeapon()->getAction() + " at " + target->getName() + " and misses.\n";
-        }
-    }
-    else
-    {
+    } else {
         mIsAttacking = false;
     }
 }
 
-
-
-void Actor::regainHitPoint(int maxHitPoints)
-{
-    if(randInt(1, 10) == 1)
-    {
-        if(getHitPoints() < maxHitPoints)
-        {
-            setHitPoints(getHitPoints() + 1);
-        }
+// Regain hit points with a chance
+void Actor::regainHitPoint(int maxHitPoints) {
+    if (randInt(1, 10) == 1 && getHitPoints() < maxHitPoints) {
+        setHitPoints(getHitPoints() + 1);
     }
 }
 
-void Actor::move(char dir)
-{
+// Move the actor in a direction
+void Actor::move(char dir) {
+    if (isAsleep()) {
+        decreaseSleepTime();
+        return;
+    }
     char symbol = mName[0];
-    int &row = mRow;
-    int &col = mCol;
+    int& row = mRow;
+    int& col = mCol;
     if (mTemple->determineNewPosition(row, col, dir, symbol)) {
         setPosition(row, col);
     }
 }
 
-void Actor::takeDamage(int amount)
-{
+// Take damage and reduce hit points
+void Actor::takeDamage(int amount) {
     mHitPoints -= amount;
 }
 
-void Actor::decreaseSleepTime()
-{
+// Decrease sleep time
+void Actor::decreaseSleepTime() {
     mSleepTime--;
 }
 
-Actor::~Actor()
-{
+// Check if the actor is asleep
+bool Actor::isAsleep() const {
+    return mSleepTime > 0;
 }
 
+// Destructor
+Actor::~Actor() {
+//    delete currentWeapon;
+    // Ensure the weapon is not double deleted in the inventory
+}

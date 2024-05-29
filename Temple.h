@@ -14,14 +14,6 @@
 #include <vector>
 using namespace std;
 
-const int MIN_ROOM_WIDTH = 7;
-const int MIN_ROOM_HEIGHT = 7;
-const int MAX_ROOM_WIDTH = 16;
-const int MAX_ROOM_HEIGHT = 10;
-
-const int MIN_HALL_LENGTH = 1;
-const int MAX_HALL_LENGTH = 10;
-
 const int TEMPLE_COLUMNS = 70;
 const int TEMPLE_ROWS = 18;
 
@@ -56,10 +48,9 @@ public:
     void placeMultipleGameObjects();
     
     void placeWeaponsRandomly();
-//    void placeMultipleWeapons();
     
     void placeScrollsRandomly();
-//    void placeMultipleScrolls();
+
     
     GameObject* findItems(int r, int c);
 
@@ -76,7 +67,9 @@ public:
     void resetMonstersAttackingStatus();
     bool isAnyMonsterAttacking() const;
 
-    void generateRooms();
+    bool generateRooms(int numRoom);
+    void generateHallways();
+    
     bool isAreaClear(int startRow, int startCol, int height, int width);
     void placeRoom(int startRow, int startCol, int height, int width);
     
@@ -88,17 +81,23 @@ public:
     
     bool isNextToPlayer(Monster* monster);
     
+    void createTemple();
+    
     void copyTemple(const char temple[TEMPLE_ROWS][TEMPLE_COLUMNS], char destination[TEMPLE_ROWS][TEMPLE_COLUMNS]);
     
+    int pathExistsToPlayer(int grid[TEMPLE_ROWS][TEMPLE_COLUMNS], int goblinRow, int goblinCol, int playerRow, int playerCol, int steps);
+
     
-    /*
-    void testRoom();
-    void printGrid();
-    void generateGrid();
-    int generate_room_width();
-    int generate_room_height();
-    char grid[GRID_HEIGHT][GRID_WIDTH];
-    */
+    void placeGoldenIdol();
+    
+    int getVisitedGrid();
+    
+    
+    Scroll* generateRandomScroll();
+    char determineBestDirectionForGoblin(int goblinRow, int goblinCol, int playerRow, int playerCol, int steps);
+
+
+    
     
 private:
     int mGoblinSmellDistance;
@@ -107,59 +106,21 @@ private:
     std::vector<Monster*> mMonsters;
     std::vector<GameObject*> mItems;
     
-    std::vector<std::vector<int>> mRooms;
-    
     int mDescend_r;
     int mDescend_c;
+    
+    int mRoomNum;
+    int roomRowCoord[TEMPLE_ROWS];
+    int roomColCoord[TEMPLE_COLUMNS];
     char temple[TEMPLE_ROWS][TEMPLE_COLUMNS];
     
-    //for determining min/max of room size
+    int visitedGrid[TEMPLE_ROWS][TEMPLE_COLUMNS];
+
+    
+
 };
 
-//*IMPORTANT* PROBABLY PUT THIS IN GAME.CPP UNDER GENERATELEVEL FUNCTION
 
-
-//PSEUDOCODE
-//fill in entire grid
-//choose 5 locations to put holes (end goal: keep putting holes until path to finish. Maybe random amount of locations)
-//for each location:
-//          fill in each whitespace of certain width
-
-/*
- code for making room
- for making rooms
- for (int i = 0; i < 5; i++)
- {
-    int height = randInt(4, 9) //arb
-    int width = randInt(4, 9)
-    int x = randInt()
- }
- 
- 
- make a room, randomly generate hallway in any of the four directions, and then make another room based on where you placed hallway. can have two halsl that make a right angle
- 
- */
-
-/*
- start_point = (random)
- for (int i = 0; i < 5; i++)
- {
-    choose a place for a room
-    choose a size of a room
-    choose a direction and length for a hall (can have two halls that connect to same room)
-    try to make a room at the end of the hall, if you can't try a new hall
-    start_point = end_point;
- 
- }
- */
-
-//edit and put this in .h file
-
-
-
-
-
-//fill in the entire grid
 
 
 #endif /* Temple_h */

@@ -21,7 +21,7 @@ public:
 private:
     Temple* mGameTemple;
     int mGoblinSmellDistance;
-//    int mNumMonsters;
+
 };
 
 

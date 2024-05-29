@@ -13,6 +13,7 @@
 
 class Actor;
 
+// Base class for all game objects
 class GameObject
 {
 public:
@@ -22,13 +23,13 @@ public:
     void setPosition(int x, int y);
     int getObjectCol() const;
     int getObjectRow() const;
-    
+
 private:
     std::string mName;
     int mObjectCol, mObjectRow;
 };
 
-
+// Base class for all weapons
 class Weapon : public GameObject
 {
 public:
@@ -40,16 +41,14 @@ public:
     
     bool attackHits(int attackerDexterity, int defenderDexterity, int defenderArmor) const;
     int calculateDamageAmount(int attackerStrength) const;
-    
- 
+
 private:
     std::string mAction;
     int mWeaponDexterityBonus;
     int mWeaponDamageAmount;
-    
 };
 
-//derived classes of weapons
+// Derived weapon classes
 class Mace : public Weapon
 {
 public:
@@ -68,14 +67,14 @@ public:
     LongSword();
 };
 
-//only dropped when killing a monster
+
 class MagicAxe : public Weapon
 {
 public:
     MagicAxe();
 };
 
-//only dropped when killing Sankewomen
+
 class MagicFangsOfSleep : public Weapon
 {
 public:
@@ -83,54 +82,56 @@ public:
     bool putToSleep(int& defenderSleepTime) const;
 };
 
-//Base scroll class
+// Base class for all scrolls
 class Scroll : public GameObject
 {
 public:
     Scroll(const std::string& name);
     virtual ~Scroll();
-
-    // Pure virtual function for the derived classes to implement specific use behavior
-    //virtual void use(Actor* user) = 0;
 };
 
-// Derived classes of scrolls
-//TO DO IMPLEMENT DERIVED SCROLLS
-//Only drops when killed by a monster
+// Special game object class
+class GoldenIdol : public GameObject
+{
+public:
+    GoldenIdol();
+    virtual ~GoldenIdol();
+};
+
+// Derived scroll classes
 class ScrollOfTeleportation : public Scroll
 {
 public:
     ScrollOfTeleportation();
-    //void use(Actor* user) override;
+
 };
 
 class ScrollOfImproveArmor : public Scroll
 {
 public:
     ScrollOfImproveArmor();
-   // void use(Actor* user) override;
+
 };
 
 class ScrollOfRaiseStrength : public Scroll
 {
 public:
     ScrollOfRaiseStrength();
-    //void use(Actor* user) override;
+
 };
 
 class ScrollOfEnhanceHealth : public Scroll
 {
 public:
     ScrollOfEnhanceHealth();
-   // void use(Actor* user) override;
+
 };
 
 class ScrollOfEnhanceDexterity : public Scroll
 {
 public:
     ScrollOfEnhanceDexterity();
-  //  void use(Actor* user) override;
-};
 
+};
 
 #endif /* GAMEOBJECTS_INCLUDED */

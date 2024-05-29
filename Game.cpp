@@ -1,206 +1,177 @@
-// Game.cpp
-
 #include "Game.h"
 #include "Temple.h"
 #include "utilities.h"
 #include <iostream>
 using namespace std;
 
-// Implement these and other Game member functions you may have added.
-
+// Constructor to initialize the game with a goblin smell distance
 Game::Game(int goblinSmellDistance)
 {
-    
     mGoblinSmellDistance = goblinSmellDistance;
-    
-    //change (goblinSmellDistance, #) back to 0
     mGameTemple = new Temple(goblinSmellDistance, 0);
-    mGameTemple->placePlayerRandomly();
-    mGameTemple->placeDescendPoint();
-    
-    //CHECK THIS AGAIN MIGHT HAVE TO DELETE
-//    mNumMonsters = randInt(2, 5 * (mGameTemple->getLevel() + 1) + 1);
-//    for (int i = 0; i < mNumMonsters; i++)
-//    {
-        mGameTemple->generateMonsters();
-//    }
-    
-    mGameTemple->placeMultipleGameObjects();
-//    mGameTemple->placeMultipleWeapons();
-//    mGameTemple->placeMultipleScrolls();
-    
-
 }
 
+// Destructor to clean up the dynamically allocated Temple object
 Game::~Game()
 {
     delete mGameTemple;
 }
 
+// Main game loop to handle player input and game actions
 void Game::play()
 {
     char ch = ' ';
     mGameTemple->display();
     Player* gamePlayer;
     
-    //inventory trackers
+    // Inventory trackers
     int state = 0;
     bool inv = false;
     bool updatedStatus = false;
     bool pickedUpStatus = false;
+    bool hasGoldenIdol = false;
+    bool isAlive = true;
     string statusOutput = "";
     string pickUp = "";
     string scrollOutput = "";
     
-    while ((ch) != 'q') {
+    while ((ch) != 'q' && !hasGoldenIdol && isAlive) {
         ch = getCharacter();
         gamePlayer = mGameTemple->getPlayer();
         
+        // Handle weapon equipping from inventory
         if (state == 1) {
             int index = gamePlayer->convertCharToInt(ch);
-            if (index < gamePlayer->getInventory().size())
-            {
+            if (index < gamePlayer->getInventory().size()) {
                 updatedStatus = true;
                 GameObject* invItem = gamePlayer->getInventory().at(index);
-                if (!mGameTemple->isScroll(invItem))
-                {
+                if (!mGameTemple->isScroll(invItem)) {
                     Weapon* w = dynamic_cast<Weapon*>(invItem);
                     gamePlayer->equipWeapon(w);
                     statusOutput = "\nYou are wielding " + invItem->getName();
-                }
-                else
-                {
+                } else {
                     statusOutput = "\nYou can't wield " + invItem->getName();
                 }
                 state = 0;
                 inv = false;
             }
         }
+
+        // Handle scroll reading from inventory
         if (state == 2) {
             int index = gamePlayer->convertCharToInt(ch);
-            if (index < gamePlayer->getInventory().size())
-            {
+            if (index < gamePlayer->getInventory().size()) {
                 updatedStatus = true;
                 GameObject* invItem = gamePlayer->getInventory().at(index);
-                if (mGameTemple->isScroll(invItem))
-                {
+                if (mGameTemple->isScroll(invItem)) {
                     Scroll* s = dynamic_cast<Scroll*>(invItem);
-                    
                     gamePlayer->readScroll(s);
                     scrollOutput = gamePlayer->getScrollStatus();
                     gamePlayer->removeFromInventory(s);
-                    
                     statusOutput = "\nYou read the " + invItem->getName();
-                }
-                else
-                {
+                } else {
                     statusOutput = "\nYou can't read a " + invItem->getName();
                 }
                 state = 0;
                 inv = false;
             }
         }
-        
-        if(ch == 'c')
-        {
+
+        // Cheat code to set player stats
+        if (ch == 'c') {
             gamePlayer->setHitPoints(50);
             gamePlayer->setMaxHitPoints(50);
             gamePlayer->setStrength(9);
         }
-        
-        if (ch == 'i' || ch == 'w' || ch == 'r')
-        {
-            if (inv == false) //inventory is not opened
-            {
+
+        // Handle inventory view toggle
+        if (ch == 'i' || ch == 'w' || ch == 'r') {
+            if (!inv) { // Inventory is not opened
                 gamePlayer->viewInventory();
                 inv = true;
-            }
-            else if (inv == true) //inventory is open
-            {
+            } else { // Inventory is open
                 inv = false;
             }
-
-        }
-        else
-        {
+        } else {
             inv = false;
         }
-        
-        if (ch == 'w')
-        {
+
+        // Set state for weapon equipping or scroll reading
+        if (ch == 'w') {
             state = 1;
-        }
-        else if (ch == 'r')
-        {
+        } else if (ch == 'r') {
             state = 2;
         }
-        
-        //makes sure only adds gameobjects to inventory
-        if (ch == 'g' && !mGameTemple->isDescendPosition(gamePlayer->getRow(), gamePlayer->getCol()) && mGameTemple->isGameObjectAt(gamePlayer->getRow(), gamePlayer->getCol()))
-        {
-            
+
+        // Handle item pickup
+        if (ch == 'g' && !mGameTemple->isDescendPosition(gamePlayer->getRow(), gamePlayer->getCol()) && mGameTemple->isGameObjectAt(gamePlayer->getRow(), gamePlayer->getCol())) {
             GameObject *toAdd = mGameTemple->findItems(gamePlayer->getRow(), gamePlayer->getCol());
-            
-            
-            if (toAdd != nullptr) //you are on top of something
-            {
+            if (toAdd != nullptr && gamePlayer->getInventorySize() < 25) { // Player is on top of something
                 mGameTemple->removeItems(gamePlayer->getRow(), gamePlayer->getCol());
                 gamePlayer->addToInventory(toAdd);
                 pickUp = "\nYou pick up " + toAdd->getName();
                 pickedUpStatus = true;
+            } else {
+                pickUp = "Your knapsack is full; you can't pick that up.";
+                pickedUpStatus = true;
             }
-        
-            
+            if (toAdd != nullptr && toAdd->getName() == "the golden idol") {
+                mGameTemple->removeItems(gamePlayer->getRow(), gamePlayer->getCol());
+                gamePlayer->addToInventory(toAdd);
+                pickUp = "\nYou pick up " + toAdd->getName();
+                pickedUpStatus = true;
+                hasGoldenIdol = true;
+            }
         }
-        
-        if (ch == '>' && mGameTemple->isDescendPosition(gamePlayer->getRow(), gamePlayer->getCol()))
-        {
+
+        // Handle level descent
+        if (ch == '>' && mGameTemple->isDescendPosition(gamePlayer->getRow(), gamePlayer->getCol())) {
             descend();
         }
 
-        gamePlayer->regainHitPoint(gamePlayer->getMaxHitPoints());
+        // Handle player movement and interactions
         gamePlayer->move(ch);
-        mGameTemple->moveMonsters(gamePlayer);
         mGameTemple->playerAttack();
-        
-        
-        //DEBUGGING COUT
-        //cout << "mosnter health: " << mGameTemple->getMonster(0)->getHitPoints();
-        
-        
-        if (inv != true) //inventory is not being showed
-        {
+        mGameTemple->moveMonsters(gamePlayer);
+        gamePlayer->regainHitPoint(gamePlayer->getMaxHitPoints());
+
+        // Display game status and messages
+        if (!inv) { // Inventory is not being shown
             mGameTemple->display();
-            cout << endl;
-            //couting states underneath display
-            if (gamePlayer->isAttacking())
-            {
+            if (gamePlayer->isAsleep()) {
+                cout << endl;
+            }
+            if (gamePlayer->isAttacking()) {
                 cout << endl << gamePlayer->getName() << gamePlayer->getAttackStatus();
                 gamePlayer->setAttacking(false);
             }
-            if (mGameTemple->isAnyMonsterAttacking())
-            {
+            if (mGameTemple->isAnyMonsterAttacking()) {
                 cout << mGameTemple->getAllMonstersAttackStatus();
                 mGameTemple->resetMonstersAttackingStatus();
             }
-            if (pickedUpStatus)
-            {
+            if (pickedUpStatus) {
                 cout << pickUp;
                 pickedUpStatus = false;
             }
-            if (updatedStatus)
-            {
+            if (hasGoldenIdol) {
+                cout << "\nCongratulations, you won!" << endl;
+            }
+            if (updatedStatus) {
                 cout << statusOutput;
                 cout << scrollOutput;
                 scrollOutput = "";
                 updatedStatus = false;
             }
         }
-        
+
+        // Handle player death and end game
+        if (gamePlayer->getHitPoints() <= 0) {
+            isAlive = false;
+        }
     }
- 
 }
 
+// Handle level descent and player state transfer
 void Game::descend()
 {
     Player* oldPlayer = mGameTemple->getPlayer();
@@ -211,7 +182,6 @@ void Game::descend()
     int playerDexterity = oldPlayer->getDexterity();
     Weapon* playerWeapon = oldPlayer->getWeapon();
     vector<GameObject*> oldInventory = oldPlayer->getInventory();
-    
     
     int nextLvl = mGameTemple->getLevel() + 1;
     delete mGameTemple;
@@ -229,26 +199,9 @@ void Game::descend()
     newPlayer->equipWeapon(playerWeapon);
     newPlayer->setInventory(oldInventory);
     
-    mGameTemple->placeDescendPoint();
-    
-    
-//    mNumMonsters = randInt(2, 5 * (mGameTemple->getLevel() + 1) + 1);
-//    for (int i = 0; i < mNumMonsters; i++)
-//    {
-        mGameTemple->generateMonsters();
-//    }
-    
-    mGameTemple->placeMultipleGameObjects();
-    
-//    mGameTemple->placeMultipleWeapons();
-//    mGameTemple->placeMultipleScrolls();
+    if (mGameTemple->getLevel() < 4) {
+        mGameTemple->placeDescendPoint();
+    } else if (mGameTemple->getLevel() == 4) {
+        mGameTemple->placeGoldenIdol();
+    }
 }
-
-
-
-
-// You will presumably add to this project other .h/.cpp files for the various
-// classes of objects you need to play the game:  player, monsters, weapons, 
-// etc.  You might have a separate .h/.cpp pair for each class (e.g., Player.h,
-// Bogeyman.h, etc.), or you might put the class declarations for all actors in
-// Actor.h, all game objects in GameObject.h, etc.

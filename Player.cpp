@@ -13,11 +13,6 @@
 #include <iostream>
 using namespace std;
 
-//at runtime it will know actor's current position
-//IMPORTANT row and col (last two parameters) ARE RANDOM INTS (3, 3), CHANGE LATER
-//IMPORTANT change "short sword" to weapon after implementing weapon object
-// starting conditions "Player", 20, "short sword", 2, 2, 2, 0, 3, 3
-//CHANGED (3, 3) to row and col from the constructor parameters, BE CAREFUL AND CHANGE IT BACK IF IT DOESN'T WORK
 Player::Player(Temple* playerTemple, int row, int col) : Actor(playerTemple, "Player", 20, 20, new ShortSword(), 2, 2, 2, 0, row, col)
 {
     addToInventory(getWeapon());
@@ -27,14 +22,6 @@ Player::~Player()
 {
 }
 
-
-
-//void Player::attack(Actor* attacker, Actor* target)
-//{
-//    int curr
-//}
-
-
 char Player::getLastDirection() const
 {
     return lastDirection;
@@ -42,28 +29,12 @@ char Player::getLastDirection() const
 
 
 
-//void Player::attack(Actor* target)
-//{
-////    cout << "Player attacking target" << endl;
-////    
-////    if (getWeapon()->attackHits(getDexterity(), target->getDexterity(), target->getArmor()))
-////    {
-////        int damage = currentWeapon->calculateDamageAmount(mStrength);
-////        target->takeDamage(damage);
-////
-////        
-////        //special case for magic fangs of sleep
-////        MagicFangsOfSleep* magicFangs = dynamic_cast<MagicFangsOfSleep*>(getWeapon());
-////        if (magicFangs)
-////        {
-////            magicFangs->putToSleep(target->getSleepTime());
-////        }
-////    }
-//}
-
-
 void Player::move(char dir)
 {
+    if (isAsleep()) {
+        decreaseSleepTime();
+        return;
+    }
     char symbol = '@';
     int row = getRow();
     int col = getCol();
@@ -74,25 +45,26 @@ void Player::move(char dir)
     }
 }
 
-/*
- when you click w, viewInventory(). Based on what user presses, find which pointer that character is referring to using a for loop. Then use dynamic cast to check if the pointer is a weapon or not:
 
-ex
-
- dynamic_cast<Weapon* w>
- if (w == nullptr) it is not a weapon , else is a weapon and you equip it
- 
- dynamic_cast<Scroll* s>
- if (s == nullptr) it is not a scroll, else is a scroll and you equip it
- */
 
 void Player::addToInventory(GameObject* add)
 {
-    Inventory.push_back(add);
+    int scrollsAndWeaponsCount = 0;
+    for (auto item : Inventory)
+    {
+        if (dynamic_cast<Scroll*>(item) || dynamic_cast<Weapon*>(item))
+        {
+            scrollsAndWeaponsCount++;
+        }
+    }
+
+    // Check if we can add scrolls or weapons
+    if (scrollsAndWeaponsCount < 25 || (add->getName() == "the golden idol" && Inventory.size() < 26))
+    {
+        Inventory.push_back(add);
+    }
 }
 
-
-//HAVE TO CHECK IF LOGIC IS CORRECT
 void Player::removeFromInventory(GameObject* remove)
 {
     for (auto it = Inventory.begin(); it != Inventory.end(); )
@@ -137,6 +109,11 @@ const vector<GameObject*>& Player::getInventory()
 void Player::setInventory(vector<GameObject*> inv)
 {
     Inventory = inv;
+}
+
+int Player::getInventorySize() const
+{
+    return (int)Inventory.size();
 }
 
 

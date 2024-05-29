@@ -64,6 +64,7 @@ public:
     void move(char dir);
     
     bool isAttacking() const;
+    bool isAsleep() const;
     
     void regainHitPoint(int maxHitPoints);
     
@@ -98,6 +99,8 @@ public:
     
     void addToInventory(GameObject* add);
     
+    int getInventorySize() const;
+    
     void move(char dir);
     
     int convertCharToInt(char val);
@@ -123,6 +126,7 @@ public:
     void setSmellDistance(int distance);
     int getSmellDistance() const;
     void die();
+    void goblinTakeTurn(Player* player);
     
 private:
     int mSmellDistance;
@@ -152,7 +156,6 @@ class Goblins : public Monster
 {
 public:
     Goblins(Temple* currGoblinTemple, int row, int col);
-    bool pathExistsToPlayer(char currTemple[18][70], int sR, int sC, int playerRow, int playerCol, int stepsTaken);
 };
 
 #endif /* ACTOR_INCLUDED */
