@@ -480,12 +480,12 @@ void Temple::moveMonsters(Player* player) {
         if (monster->getName() == "Dragon") {
             monster->regainHitPoint(monster->getMaxHitPoints());
         }
-        if (monster->getName() == "Goblin") {
-            // Uncomment this line to enable goblin actions
-            // monster->goblinTakeTurn(player);
-        } else {
+//        if (monster->getName() == "Goblin") {
+//            // Uncomment this line to enable goblin actions
+//            // monster->goblinTakeTurn(player);
+//        } else {
             monster->takeTurn(player);
-        }
+//        }
     }
 }
 

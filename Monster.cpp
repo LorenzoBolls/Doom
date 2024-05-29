@@ -146,29 +146,29 @@ Goblins::Goblins(Temple* currGoblinTemple, int row, int col) : Monster(currGobli
 {
 }
 
-void Monster::goblinTakeTurn(Player* player) {
-    if (getHitPoints() <= 0) {
-        die();
-        return;
-    }
-
-    int playerRow = player->getRow();
-    int playerCol = player->getCol();
-
-    // If adjacent to player, attack
-    if (abs(playerRow - getRow()) + abs(playerCol - getCol()) == 1) {
-        attack(player);
-        return;
-    }
-
-    // Move closer to player if within smell range
-    if (abs(playerRow - getRow()) <= getSmellDistance() && abs(playerCol - getCol()) <= getSmellDistance()) {
-        char bestDirection = getTemple()->determineBestDirectionForGoblin(getRow(), getCol(), playerRow, playerCol, getSmellDistance());
-        if (bestDirection != ' ') {
-            move(bestDirection);
-        }
-    }
-}
+//void Monster::goblinTakeTurn(Player* player) {
+//    if (getHitPoints() <= 0) {
+//        die();
+//        return;
+//    }
+//
+//    int playerRow = player->getRow();
+//    int playerCol = player->getCol();
+//
+//    // If adjacent to player, attack
+//    if (abs(playerRow - getRow()) + abs(playerCol - getCol()) == 1) {
+//        attack(player);
+//        return;
+//    }
+//
+//    // Move closer to player if within smell range
+//    if (abs(playerRow - getRow()) <= getSmellDistance() && abs(playerCol - getCol()) <= getSmellDistance()) {
+//        char bestDirection = getTemple()->determineBestDirectionForGoblin(getRow(), getCol(), playerRow, playerCol, getSmellDistance());
+//        if (bestDirection != ' ') {
+//            move(bestDirection);
+//        }
+//    }
+//}
 
 Dragon::Dragon(Temple* currDragonTemple, int row, int col)
     : Monster(currDragonTemple, "Dragon", randInt(20,25), 25, new LongSword(), 4, 4, 4, row, col, 0)
